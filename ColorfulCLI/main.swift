@@ -7,13 +7,12 @@
 
 import Foundation
 
-typealias ColoredGraph = [Int : (CGColor, [Int])]
+typealias ColoredGraph = [Int : (Colors, [Int])]
 
 enum Colors {
-    static let red = CGColor(red: 1, green: 0, blue: 0, alpha: 1)
-    static let grn = CGColor(red: 0, green: 1, blue: 0, alpha: 1)
-    static let blu = CGColor(red: 0, green: 0, blue: 1, alpha: 1)
-    static let prp = CGColor(red: 1, green: 0, blue: 1, alpha: 1)
+    case red
+    case grn
+    case blu
 }
 
 let TestGraphs : [String: (ColoredGraph, Bool)] = [
@@ -34,12 +33,6 @@ let TestGraphs : [String: (ColoredGraph, Bool)] = [
           3: (Colors.grn, [1, 2, 4]),
           4: (Colors.red, [1, 2, 3])],
          false),
-    "tetrahedronWithPurpleCorner":
-        ([1: (Colors.blu, [2, 3, 4]),
-          2: (Colors.red, [1, 3, 4]),
-          3: (Colors.grn, [1, 2, 4]),
-          4: (Colors.prp, [1, 2, 3])],
-         false),
     "pentastar":
         ([1: (Colors.blu, [6, 7]),
           2: (Colors.red, [7, 8]),
@@ -54,11 +47,13 @@ let TestGraphs : [String: (ColoredGraph, Bool)] = [
          true)
 ]
 
-func isThreeColored (graph : ColoredGraph) -> Bool {
-    var colorsSeen = Set<CGColor>()
+func isThreeColored (_ graph : ColoredGraph) -> Bool {
+    var colorsSeen = [Colors]()
     
     for (_, (color, edges)) in graph {
-        colorsSeen.insert(color)
+        if !colorsSeen.contains(color) {
+            colorsSeen.append(color)
+        }
         
         for pairVertexID in edges {
             let (pairColor, _) = graph[pairVertexID]!
@@ -69,17 +64,55 @@ func isThreeColored (graph : ColoredGraph) -> Bool {
         }
     }
     
-    if colorsSeen.count > 3 {
+    if colorsSeen.count != 3 {
         return false
     }
     
     return true
 }
 
+func threeColorPermutations (for graph : ColoredGraph) -> [ColoredGraph] {
+    guard isThreeColored(graph) else {
+        return []
+    }
+    
+    // for speed
+    let permutations = [
+        [Colors.red, Colors.grn, Colors.blu],
+        [Colors.red, Colors.blu, Colors.grn],
+        [Colors.grn, Colors.red, Colors.blu],
+        [Colors.grn, Colors.blu, Colors.red],
+        [Colors.blu, Colors.red, Colors.grn],
+        [Colors.blu, Colors.grn, Colors.red]
+    ]
+    
+    var graphPermutations = [ColoredGraph]()
+    
+    for permutation in permutations {
+        var newGraph = graph
+        for (vertexID, (color, _)) in newGraph {
+            switch color {
+            case .red:
+                newGraph[vertexID]!.0 = permutation[0]
+            case .grn:
+                newGraph[vertexID]!.0 = permutation[1]
+            case .blu:
+                newGraph[vertexID]!.0 = permutation[2]
+            }
+        }
+        graphPermutations.append(newGraph)
+    }
+    
+    return graphPermutations
+}
+
 for (name, (graph, expectation)) in TestGraphs {
-    if(isThreeColored(graph: graph) != expectation) {
+    if(isThreeColored(graph) != expectation) {
         print("isThreeColored(\(name)) result did not match expected \(expectation)")
     } else {
         print("\(name) passed!")
+        for permutation in threeColorPermutations(for: graph) {
+            print(permutation)
+        }
     }
 }
