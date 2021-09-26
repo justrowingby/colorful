@@ -13,40 +13,53 @@ typealias CommitedGraph = [Int: (SHA256Digest, [Int])]
 typealias VertexSecrets = [Int: Data]
 
 enum Colors: UInt8 {
-    case red = 82
-    case grn = 71
-    case blu = 66
+    case first = 0
+    case second = 1
+    case third = 2
+
+     static func makeColorMap(from colors : [Colors]) -> [Colors: Colors] {
+        return [Colors.first : colors[0], Colors.second: colors[1], Colors.third: colors[2]]
+    }
+
+    static let permutations = [
+        makeColorMap([Colors.first, Colors.second, Colors.third]),
+        makeColorMap([Colors.first, Colors.third, Colors.second]),
+        makeColorMap([Colors.second, Colors.first, Colors.third]),
+        makeColorMap([Colors.second, Colors.third, Colors.first]),
+        makeColorMap([Colors.third, Colors.first, Colors.second]),
+        makeColorMap([Colors.third, Colors.second, Colors.first])
+    ]
 }
 
 let TestGraphs : [String: (ColoredGraph, Bool)] = [
     "triangle":
-        ([1: (Colors.grn, [2, 3]),
-          2: (Colors.blu, [1, 3]),
-          3: (Colors.red, [1, 2])],
+        ([1: (Colors.first, [2, 3]),
+          2: (Colors.second, [1, 3]),
+          3: (Colors.third, [1, 2])],
          true),
     "diamond":
-        ([1: (Colors.blu, [2, 3, 4]),
-          2: (Colors.red, [1, 3]),
-          3: (Colors.grn, [1, 2, 4]),
-          4: (Colors.red, [1, 3])],
+        ([1: (Colors.first, [2, 3, 4]),
+          2: (Colors.second, [1, 3]),
+          3: (Colors.third, [1, 2, 4]),
+          4: (Colors.second, [1, 3])],
          true),
     "tetrahedronWithDoubleRed":
-        ([1: (Colors.blu, [2, 3, 4]),
-          2: (Colors.red, [1, 3, 4]),
-          3: (Colors.grn, [1, 2, 4]),
-          4: (Colors.red, [1, 2, 3])],
+        ([1: (Colors.first, [2, 3, 4]),
+          2: (Colors.second, [1, 3, 4]),
+          3: (Colors.third, [1, 2, 4]),
+          4: (Colors.first, [1, 2, 3])],
          false),
     "pentastar":
-        ([1: (Colors.blu, [6, 7]),
-          2: (Colors.red, [7, 8]),
-          3: (Colors.grn, [8, 9]),
-          4: (Colors.blu, [9, 10]),
-          5: (Colors.blu, [6, 10]),
-          6: (Colors.red, [1, 5, 7, 10]),
-          7: (Colors.grn, [1, 2, 6, 8]),
-          8: (Colors.blu, [2, 3, 7, 9]),
-          9: (Colors.red, [3, 4, 8, 10]),
-          10: (Colors.grn, [4, 5, 6, 9])],
+        ([1: (Colors.first, [6, 7]),
+          2: (Colors.second, [7, 8]),
+          3: (Colors.third, [8, 9]),
+          4: (Colors.first, [9, 10]),
+          5: (Colors.first, [6, 10]),
+          6: (Colors.second, [1, 5, 7, 10]),
+          7: (Colors.third, [1, 2, 6, 8]),
+          8: (Colors.first, [2, 3, 7, 9]),
+          9: (Colors.second, [3, 4, 8, 10]),
+          10: (Colors.third, [4, 5, 6, 9])],
          true)
 ]
 
@@ -79,29 +92,12 @@ func threeColorPermutations (for graph : ColoredGraph) -> [ColoredGraph] {
         return []
     }
     
-    // for speed
-    let permutations = [
-        [Colors.red, Colors.grn, Colors.blu],
-        [Colors.red, Colors.blu, Colors.grn],
-        [Colors.grn, Colors.red, Colors.blu],
-        [Colors.grn, Colors.blu, Colors.red],
-        [Colors.blu, Colors.red, Colors.grn],
-        [Colors.blu, Colors.grn, Colors.red]
-    ]
-    
     var graphPermutations = [ColoredGraph]()
     
-    for permutation in permutations {
+    for permutation in Color.permutations {
         var newGraph = graph
         for (vertexID, (color, _)) in newGraph {
-            switch color {
-            case .red:
-                newGraph[vertexID]!.0 = permutation[0]
-            case .grn:
-                newGraph[vertexID]!.0 = permutation[1]
-            case .blu:
-                newGraph[vertexID]!.0 = permutation[2]
-            }
+            newGraph[vertexID]!.0 = permutation[color]!
         }
         graphPermutations.append(newGraph)
     }
