@@ -16,6 +16,20 @@ enum Colors: UInt8 {
     case first = 0
     case second = 1
     case third = 2
+
+    static func makeColorMap(from colors : [Colors]) -> [Colors: Colors] {
+        return [Colors.first : colors[0], Colors.second: colors[1], Colors.third: colors[2]]
+    }
+
+    static let permutations = [
+        makeColorMap([Colors.first, Colors.second, Colors.third]),
+        makeColorMap([Colors.first, Colors.third, Colors.second]),
+        makeColorMap([Colors.second, Colors.first, Colors.third]),
+        makeColorMap([Colors.second, Colors.third, Colors.first]),
+        makeColorMap([Colors.third, Colors.first, Colors.second]),
+        makeColorMap([Colors.third, Colors.second, Colors.first])
+    ]
+
 }
 
 let TestGraphs : [String: (ColoredGraph, Bool)] = [
@@ -74,27 +88,19 @@ func isThreeColored (_ graph : ColoredGraph) -> Bool {
     return true
 }
 
+
+
 func threeColorPermutations (for graph : ColoredGraph) -> [ColoredGraph] {
     guard isThreeColored(graph) else {
         return []
     }
     
-    // for speed
-    let permutations = [
-        [Colors.first, Colors.second, Colors.third],
-        [Colors.first, Colors.third, Colors.second],
-        [Colors.second, Colors.first, Colors.third],
-        [Colors.second, Colors.third, Colors.first],
-        [Colors.third, Colors.first, Colors.second],
-        [Colors.third, Colors.second, Colors.first]
-    ]
-    
     var graphPermutations = [ColoredGraph]()
     
-    for permutation in permutations {
+    for permutation in Color.permutations {
         var newGraph = graph
         for (vertexID, (color, _)) in newGraph {
-            newGraph[vertexID]!.0 = permutation[color]
+            newGraph[vertexID]!.0 = permutation[color]!
         }
         graphPermutations.append(newGraph)
     }
