@@ -113,7 +113,7 @@ func commitmentForColor(_ color: Colors) -> (Data, SHA256Digest)? {
     let secretLength = 33
     var bytes = [UInt8](repeating: 0, count: secretLength)
     let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
-
+    
     guard status == errSecSuccess else { // Always test the status.
         return nil
     }
@@ -144,8 +144,21 @@ func revealEdge(in graph: CommitedGraph, with secrets: VertexSecrets, for vertex
     guard (graph[vertexA]?.1.contains(vertexB) ?? false) && (graph[vertexB]?.1.contains(vertexA) ?? false) else {
         return nil
     }
- 
+    
     return (secrets[vertexA], secrets[vertexB]) as? (Data, Data)
+}
+
+func verifyEdge(in graph: CommitedGraph, with secrets: (Data, Data), for vertexA: Int, and vertexB: Int) -> Bool {
+    guard let lastByteA = Colors(rawValue: secrets.0.last ?? UInt8.max),
+            let lastByteB = Colors(rawValue: secrets.1.last ?? UInt8.max) else {
+        return false
+    }
+    
+    guard SHA256.hash(data: secrets.0) == graph[vertexA]?.0 && SHA256.hash(data: secrets.1) == graph[vertexB]?.0 else {
+        return false
+    }
+    
+    return lastByteA != lastByteB
 }
 
 for (name, (graph, expectation)) in TestGraphs {
