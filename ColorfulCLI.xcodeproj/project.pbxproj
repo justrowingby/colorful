@@ -8,8 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		8857B6BA26FEB67B00EAFA9A /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8857B6B926FEB67B00EAFA9A /* main.swift */; };
-		8857B6C226FEB69200EAFA9A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8857B6C126FEB69200EAFA9A /* CoreGraphics.framework */; };
 		8857B6C526FF02AC00EAFA9A /* Algorithms in Frameworks */ = {isa = PBXBuildFile; productRef = 8857B6C426FF02AC00EAFA9A /* Algorithms */; };
+		8857B6C826FFE48100EAFA9A /* Crypto in Frameworks */ = {isa = PBXBuildFile; productRef = 8857B6C726FFE48100EAFA9A /* Crypto */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -36,7 +36,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8857B6C526FF02AC00EAFA9A /* Algorithms in Frameworks */,
-				8857B6C226FEB69200EAFA9A /* CoreGraphics.framework in Frameworks */,
+				8857B6C826FFE48100EAFA9A /* Crypto in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -94,6 +94,7 @@
 			name = ColorfulCLI;
 			packageProductDependencies = (
 				8857B6C426FF02AC00EAFA9A /* Algorithms */,
+				8857B6C726FFE48100EAFA9A /* Crypto */,
 			);
 			productName = ColorfulCLI;
 			productReference = 8857B6B626FEB67B00EAFA9A /* ColorfulCLI */;
@@ -125,6 +126,7 @@
 			mainGroup = 8857B6AD26FEB67B00EAFA9A;
 			packageReferences = (
 				8857B6C326FF02AC00EAFA9A /* XCRemoteSwiftPackageReference "swift-algorithms" */,
+				8857B6C626FFE48100EAFA9A /* XCRemoteSwiftPackageReference "swift-crypto" */,
 			);
 			productRefGroup = 8857B6B726FEB67B00EAFA9A /* Products */;
 			projectDirPath = "";
@@ -312,6 +314,14 @@
 				minimumVersion = 1.0.0;
 			};
 		};
+		8857B6C626FFE48100EAFA9A /* XCRemoteSwiftPackageReference "swift-crypto" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-crypto.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -319,6 +329,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 8857B6C326FF02AC00EAFA9A /* XCRemoteSwiftPackageReference "swift-algorithms" */;
 			productName = Algorithms;
+		};
+		8857B6C726FFE48100EAFA9A /* Crypto */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8857B6C626FFE48100EAFA9A /* XCRemoteSwiftPackageReference "swift-crypto" */;
+			productName = Crypto;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

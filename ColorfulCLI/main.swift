@@ -6,13 +6,16 @@
 //
 
 import Foundation
+import Crypto
 
-typealias ColoredGraph = [Int : (Colors, [Int])]
+typealias ColoredGraph = [Int: (Colors, [Int])]
+typealias CommitedGraph = [Int: (SHA256Digest, [Int])]
+typealias VertexSecrets = [Int: Data]
 
-enum Colors {
-    case red
-    case grn
-    case blu
+enum Colors: UInt8 {
+    case red = 82
+    case grn = 71
+    case blu = 66
 }
 
 let TestGraphs : [String: (ColoredGraph, Bool)] = [
@@ -104,6 +107,45 @@ func threeColorPermutations (for graph : ColoredGraph) -> [ColoredGraph] {
     }
     
     return graphPermutations
+}
+
+func commitmentForColor(_ color: Colors) -> (Data, SHA256Digest)? {
+    let secretLength = 33
+    var bytes = [UInt8](repeating: 0, count: secretLength)
+    let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
+
+    guard status == errSecSuccess else { // Always test the status.
+        return nil
+    }
+    
+    bytes[secretLength - 1] = color.rawValue
+    
+    let secret = Data(bytes: bytes, count: secretLength)
+    return (secret, SHA256.hash(data: secret))
+}
+
+func commitedGraph(from graph: ColoredGraph) -> (CommitedGraph, VertexSecrets)? {
+    var commitedGraph = CommitedGraph()
+    var vertexSecrets = VertexSecrets()
+    
+    for (vertexID, (color, edges)) in graph {
+        guard let (secret, commitment) = commitmentForColor(color) else {
+            return nil
+        }
+        
+        commitedGraph[vertexID] = (commitment, edges)
+        vertexSecrets[vertexID] = secret
+    }
+    
+    return (commitedGraph, vertexSecrets)
+}
+
+func revealEdge(in graph: CommitedGraph, with secrets: VertexSecrets, for vertexA: Int, and vertexB: Int) -> (Data, Data)? {
+    guard (graph[vertexA]?.1.contains(vertexB) ?? false) && (graph[vertexB]?.1.contains(vertexA) ?? false) else {
+        return nil
+    }
+ 
+    return (secrets[vertexA], secrets[vertexB]) as? (Data, Data)
 }
 
 for (name, (graph, expectation)) in TestGraphs {
