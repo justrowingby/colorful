@@ -1,3 +1,3 @@
 # Colorful
 
-A description of this package.
+Type of dog that is three colors
