@@ -8,9 +8,9 @@
 import Foundation
 import Crypto
 
-typealias ColoredGraph = [Int: (Colors, [Int])]
-typealias CommitedGraph = [Int: (SHA256Digest, [Int])]
-typealias VertexSecrets = [Int: Data]
+typealias ColoredGraph = [UInt: (Colors, [UInt])]
+typealias CommitedGraph = [UInt: (SHA256Digest, [UInt])]
+typealias VertexSecrets = [UInt: Data]
 
 enum Colors: UInt8 {
     case red = 82
@@ -124,6 +124,25 @@ func commitmentForColor(_ color: Colors) -> (Data, SHA256Digest)? {
     return (secret, SHA256.hash(data: secret))
 }
 
+func attachGraph(_ addition: ColoredGraph, to base: ColoredGraph, matchingVertices: [UInt: UInt] ) -> ColoredGraph? {
+    var newBase = base
+    let bMax = newBase.keys.max() ?? 0
+    
+    for (vertexID, (color, edges)) in addition {
+        let newEdges = edges.map { matchingVertices[$0] ?? $0 + bMax }
+        
+        if let matchingVertex = matchingVertices[vertexID], let (colorB, edgesB) = newBase[matchingVertex] {
+            guard colorB == color  else { return nil }
+            
+            newBase[matchingVertex] = (color, edgesB + newEdges)
+        } else {
+            newBase[vertexID + bMax] = (color, newEdges )
+        }
+    }
+    
+    return newBase
+}
+
 func commitedGraph(from graph: ColoredGraph) -> (CommitedGraph, VertexSecrets)? {
     var commitedGraph = CommitedGraph()
     var vertexSecrets = VertexSecrets()
@@ -140,7 +159,7 @@ func commitedGraph(from graph: ColoredGraph) -> (CommitedGraph, VertexSecrets)? 
     return (commitedGraph, vertexSecrets)
 }
 
-func revealEdge(in graph: CommitedGraph, with secrets: VertexSecrets, for vertexA: Int, and vertexB: Int) -> (Data, Data)? {
+func revealEdge(in graph: CommitedGraph, with secrets: VertexSecrets, for vertexA: UInt, and vertexB: UInt) -> (Data, Data)? {
     guard (graph[vertexA]?.1.contains(vertexB) ?? false) && (graph[vertexB]?.1.contains(vertexA) ?? false) else {
         return nil
     }
@@ -148,7 +167,7 @@ func revealEdge(in graph: CommitedGraph, with secrets: VertexSecrets, for vertex
     return (secrets[vertexA], secrets[vertexB]) as? (Data, Data)
 }
 
-func verifyEdge(in graph: CommitedGraph, with secrets: (Data, Data), for vertexA: Int, and vertexB: Int) -> Bool {
+func verifyEdge(in graph: CommitedGraph, with secrets: (Data, Data), for vertexA: UInt, and vertexB: UInt) -> Bool {
     guard let lastByteA = Colors(rawValue: secrets.0.last ?? UInt8.max),
             let lastByteB = Colors(rawValue: secrets.1.last ?? UInt8.max) else {
         return false
