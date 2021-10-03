@@ -124,25 +124,6 @@ func commitmentForColor(_ color: Colors) -> (Data, SHA256Digest)? {
     return (secret, SHA256.hash(data: secret))
 }
 
-func attachGraph(_ addition: ColoredGraph, to base: ColoredGraph, matchingVertices: [UInt: UInt] ) -> ColoredGraph? {
-    var newBase = base
-    let bMax = newBase.keys.max() ?? 0
-    
-    for (vertexID, (color, edges)) in addition {
-        let newEdges = edges.map { matchingVertices[$0] ?? $0 + bMax }
-        
-        if let matchingVertex = matchingVertices[vertexID], let (colorB, edgesB) = newBase[matchingVertex] {
-            guard colorB == color  else { return nil }
-            
-            newBase[matchingVertex] = (color, edgesB + newEdges)
-        } else {
-            newBase[vertexID + bMax] = (color, newEdges )
-        }
-    }
-    
-    return newBase
-}
-
 func commitedGraph(from graph: ColoredGraph) -> (CommitedGraph, VertexSecrets)? {
     var commitedGraph = CommitedGraph()
     var vertexSecrets = VertexSecrets()
